@@ -42,9 +42,9 @@ const UploadFile = () => {
   };
 
   return (
-    <View style={styles.background}>
-      <Text style={styles.file}>Upload CSV File</Text>
-      <View style={styles.button}>
+    <View>
+      <Text className="text-center text-red-700">Upload CSV File</Text>
+      <View>
         <TouchableOpacity>
           <Button
             title="upload your file"
@@ -57,19 +57,5 @@ const UploadFile = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  background: {
-    backgroundColor:
-      "radial-gradient(ellipse at left bottom,    rgb(163, 237, 255) 0%,    rgba(57, 232, 255, 0.9) 59%,    rgba(48, 223, 214, 0.9) 100% )",
-  },
-  file: {
-    color: "black",
-    marginHorizontal: 145,
-  },
-  button: {
-    marginHorizontal: 60,
-  },
-});
 
 export default UploadFile;
