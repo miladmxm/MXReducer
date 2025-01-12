@@ -10,53 +10,27 @@ import CustomButton from "@/components/CustomButton";
 import { useState } from "react";
 import { FFmpegKitConfig } from "ffmpeg-kit-react-native";
 import { useVideoContext } from "@/store";
+import VideoItem from "@/components/VideoItem";
+import { addMinToFileName } from "@/utils/addMinToFileName";
+import { selectVideo } from "@/utils/ffmpeg";
 
 export default function Index() {
   const { videos, addVideo } = useVideoContext();
   console.log(videos);
   const pickDocument = async () => {
-    FFmpegKitConfig.selectDocumentForRead("video/*").then((uri) => {
-      FFmpegKitConfig.getSafParameterForRead(uri).then(async (safReadUrl) => {
-        const { uri: thumbnail } = await VideoThumbnails.getThumbnailAsync(
-          uri,
-          {
-            time: 100,
-          }
-        );
-        addVideo(safReadUrl, thumbnail);
-        //   FFmpegKitConfig.selectDocumentForWrite("video.mp4", "video/*").then(
-        //     (uri) => {
-        //       // FFmpegKitConfig.getSafParameterForWrite(uri).then((safUrl) => {
-        //       //   // FFmpegKit.executeWithArgumentsAsync([
-        //       //   //   "-i",
-        //       //   //   safReadUrl,
-        //       //   //   "-c:v",
-        //       //   //   'mpeg4',
-        //       //   //   safUrl,
-        //       //   // ]);
-        //       //   // FFmpegKit.executeAsync(
-        //       //   //   `-i ${safReadUrl} -c:v libx265 -crf 28 ${safUrl}`
-        //       //   // );
-        //       // });
-        //     }
-        //   );
-      });
-    });
+    try {
+      const [safReadUrl, thumbnail] = await selectVideo();
+      if (safReadUrl && thumbnail) addVideo(safReadUrl, thumbnail);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
     <SafeAreaView className="bg-black-soft flex-1 p-4">
       <ScrollView className="flex-1">
         {videos.map((video) => (
-          <View
-            className="border rounded-2xl border-text-3 p-2 mb-3"
-            key={video.id}
-          >
-            <Image
-              source={{ uri: video.tumbnailAddress }}
-              className="w-full aspect-video rounded-xl"
-            />
-          </View>
+          <VideoItem key={video.id} video={video} />
         ))}
       </ScrollView>
       <Animated.View
