@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "MXReducer",
-    "slug": "MXReducer",
+    "slug": "mx_reducer",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -16,7 +16,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#222222"
       },
-      "package": "com.miladmxm.MXReducer"
+      "package": "com.miladmxm.mx_reducer"
     },
     "web": {
       "bundler": "metro",
@@ -49,7 +49,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "24ea2ec2-2201-47cd-93dc-b4c9a2e15b41"
+        "projectId": "2c7d4f38-87f9-42c0-a274-ad27657c43a2"
       }
     }
   }
