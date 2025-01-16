@@ -1,4 +1,4 @@
-import { FFmpegKitConfig } from "ffmpeg-kit-react-native";
+import { FFmpegKitConfig, FFprobeKit } from "ffmpeg-kit-react-native";
 import { getThumbnailAsync } from "expo-video-thumbnails";
 
 export const selectVideo = (): Promise<[string, string]> => {
@@ -24,7 +24,7 @@ export const saveAsVideo = (
 ): Promise<string> => {
   return new Promise((resolve, reject) => {
     FFmpegKitConfig.selectDocumentForWrite(
-      saveAsFileName ?? "video.mp4",
+      saveAsFileName ?? "video",
       format ?? "video/mp4"
     ).then((uri) => {
       FFmpegKitConfig.getSafParameterForWrite(uri)

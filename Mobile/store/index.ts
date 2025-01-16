@@ -23,4 +23,10 @@ export const useVideoContext = create<VideosContext>((set) => ({
       return { videos: [...copyVideos] };
     });
   },
+  removeVideo: (id) => {
+    set(({ videos }) => {
+      const copyVideos = [...videos];
+      return { videos: [...copyVideos.filter((video) => video.id !== id)] };
+    });
+  },
 }));

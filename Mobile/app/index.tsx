@@ -1,17 +1,12 @@
-import { Image, ScrollView, Text, View } from "react-native";
+import { ScrollView, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { LinearTransition } from "react-native-reanimated";
-import * as VideoThumbnails from "expo-video-thumbnails";
 
-import UploadFile from "@/components/doc";
 import "@/app/global.css";
 import Entypo from "@expo/vector-icons/Entypo";
 import CustomButton from "@/components/CustomButton";
-import { useState } from "react";
-import { FFmpegKitConfig } from "ffmpeg-kit-react-native";
 import { useVideoContext } from "@/store";
 import VideoItem from "@/components/VideoItem";
-import { addMinToFileName } from "@/utils/addMinToFileName";
 import { selectVideo } from "@/utils/ffmpeg";
 
 export default function Index() {
