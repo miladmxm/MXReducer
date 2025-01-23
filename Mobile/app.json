@@ -37,7 +37,7 @@
       [
         "@config-plugins/ffmpeg-kit-react-native",
         {
-          "package": "full-gpl"
+          "package": "min-gpl"
         }
       ]
     ],

@@ -1,23 +1,29 @@
 import React, { useRef, useState } from "react";
 import { View, Text, Image, TouchableOpacity, TextInput } from "react-native";
 import { FFmpegKit, FFmpegKitConfig } from "ffmpeg-kit-react-native";
-import Animated, { LinearTransition } from "react-native-reanimated";
+import Animated, {
+  FadeInDown,
+  FadeOutDown,
+  LinearTransition,
+} from "react-native-reanimated";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { saveAsVideo } from "@/utils/ffmpeg";
+import { saveAsVideo, startProcess } from "@/utils/ffmpeg";
 import { useVideoContext } from "@/store";
 import { getVideoFormat } from "@/utils/getVideoFormat";
 import { cleanUpLog } from "@/utils/cleanUpLog";
 import { findTimeFromLog } from "@/utils/findTimeFromLog";
 import { convertLogTimeToNumber } from "@/utils/convertLogTimeToNumber";
 
+const _layout = LinearTransition.springify().damping(15);
+const _entering = FadeInDown.springify().damping(15);
+const _exiting = FadeOutDown.springify().damping(15);
+
 const VideoItem = ({ video }: { video: Videos }) => {
   const { setSaveAsUri, removeVideo } = useVideoContext();
   const ffmpegSessionIdRef = useRef<number>();
   const [crf, setCrf] = useState<number>(22);
-  const [processStatus, setProcessStatus] = useState<
-    "pause" | "done" | "doing"
-  >("pause");
+  const [processStatus, setProcessStatus] = useState<StatusType>("pause");
   const [durationTime, setDurationTime] = useState<number>(1);
   const [progress, setProgress] = useState<number>(0);
   const [format, setFormat] = useState<VideoFomats>(
@@ -31,42 +37,56 @@ const VideoItem = ({ video }: { video: Videos }) => {
   };
   const handleSaveAs = async () => {
     try {
-      const saveAsUri = await saveAsVideo();
+      const saveAsUri = await saveAsVideo(
+        "Video name",
+        format === "mkv" ? "video/x-matroska" : "video/mp4"
+      );
       if (saveAsUri) {
         setSaveAsUri(video.id, saveAsUri);
-        FFmpegKit.executeAsync(
-          `-i ${video.sourceAddress} -c:v libx265 -crf ${crf} ${video.saveIn} -y -stats`,
-          () => {
-            setProcessStatus("done");
-          },
-          async (log) => {
-            const currentLog = cleanUpLog(log.getMessage() as string);
-            const progressTime = findTimeFromLog(currentLog, "time=");
-            if (progressTime) {
-              setProgress(convertLogTimeToNumber(progressTime));
-            } else {
-              const session = await FFmpegKitConfig.getSession(
-                log.getSessionId()
-              );
-              let allLogs = cleanUpLog(await session.getAllLogsAsString());
-              const duration = findTimeFromLog(allLogs, "Duration:");
-              if (duration) {
-                setDurationTime(convertLogTimeToNumber(duration));
-              }
-            }
-          }
-        ).then(async (session) => {
-          const sessionId = session.getSessionId();
-          ffmpegSessionIdRef.current = sessionId;
-          setProcessStatus("doing");
-        });
+        handleProcess();
       }
     } catch (err) {
       console.log(err);
     }
   };
+
+  const handleProcess = () => {
+    startProcess(
+      { input: video.sourceAddress, output: video.saveIn!, crf: "22" },
+      (session) => {
+        const sessionId = session.getSessionId();
+        ffmpegSessionIdRef.current = sessionId;
+        setProcessStatus("doing");
+      },
+      async (log) => {
+        const currentLog = cleanUpLog(log.getMessage() as string);
+        const progressTime = findTimeFromLog(currentLog, "time=");
+        if (progressTime) {
+          setProgress(convertLogTimeToNumber(progressTime));
+        } else {
+          const session = await FFmpegKitConfig.getSession(log.getSessionId());
+          let allLogs = cleanUpLog(await session.getAllLogsAsString());
+          const duration = findTimeFromLog(allLogs, "Duration:");
+          if (duration) {
+            setDurationTime(convertLogTimeToNumber(duration));
+          }
+        }
+      },
+      () => {
+        setProcessStatus("done");
+      }
+    );
+  };
   return (
-    <View className={`border rounded-2xl border-text-3 p-2 mb-3`}>
+    <Animated.View
+      style={{
+        direction: "rtl",
+      }}
+      layout={_layout}
+      exiting={_exiting}
+      entering={_entering}
+      className={`border rounded-2xl border-text-3 p-2 mb-3`}
+    >
       <View
         className={
           processStatus === "done" ? "pointer-events-none opacity-40" : ""
@@ -139,15 +159,18 @@ const VideoItem = ({ video }: { video: Videos }) => {
         )}
         {processStatus === "doing" && (
           <>
-            <View className="flex-1 h-1 rounded-full bg-gray-300/45 flex justify-center">
+            <View className="flex-1 h-1 rounded-full bg-gray-300/45 flex justify-center mx-4">
               <Animated.View
                 layout={LinearTransition}
-                className="h-1 bg-blue-400 rounded-full relative"
+                className="h-1 bg-blue-400 w-max rounded-full relative"
                 style={{
                   width: `${(progress * 100) / durationTime}%`,
                 }}
               >
-                <Animated.Text className="absolute left-full -translate-y-1/2 text-text-1">
+                <Animated.Text
+                  layout={LinearTransition}
+                  className="absolute left-full -translate-y-1/2 text-text-1 min-w-max"
+                >
                   {((progress * 100) / durationTime).toFixed()}%
                 </Animated.Text>
               </Animated.View>
@@ -170,7 +193,7 @@ const VideoItem = ({ video }: { video: Videos }) => {
           </TouchableOpacity>
         )}
       </View>
-    </View>
+    </Animated.View>
   );
 };
 

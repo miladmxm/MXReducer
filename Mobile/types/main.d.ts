@@ -12,3 +12,10 @@ declare interface VideosContext {
 }
 
 type VideoFomats = "mkv" | "mp4";
+type StatusType = "pause" | "done" | "doing";
+
+type ProcessFFmpegOptions = {
+  input: string;
+  output: string;
+  crf: string;
+};

@@ -1,4 +1,9 @@
-import { FFmpegKitConfig, FFprobeKit } from "ffmpeg-kit-react-native";
+import {
+  FFmpegKitConfig,
+  FFmpegKit,
+  FFmpegSession,
+  LogCallback,
+} from "ffmpeg-kit-react-native";
 import { getThumbnailAsync } from "expo-video-thumbnails";
 
 export const selectVideo = (): Promise<[string, string]> => {
@@ -19,32 +24,33 @@ export const selectVideo = (): Promise<[string, string]> => {
 };
 
 export const saveAsVideo = (
-  saveAsFileName?: string,
-  format?: string
+  saveAsFileName: string = "video",
+  format: "video/mp4" | "video/x-matroska" = "video/mp4"
 ): Promise<string> => {
   return new Promise((resolve, reject) => {
-    FFmpegKitConfig.selectDocumentForWrite(
-      saveAsFileName ?? "video",
-      format ?? "video/mp4"
-    ).then((uri) => {
-      FFmpegKitConfig.getSafParameterForWrite(uri)
-        .then((safUrl) => {
-          resolve(safUrl);
-        })
-        .catch(() => {
-          reject("dos not selected save as path");
-        });
-    });
+    FFmpegKitConfig.selectDocumentForWrite(saveAsFileName, format).then(
+      (uri) => {
+        FFmpegKitConfig.getSafParameterForWrite(uri)
+          .then((safUrl) => {
+            resolve(safUrl);
+          })
+          .catch(() => {
+            reject("dos not selected save as path");
+          });
+      }
+    );
   });
 };
 
-// FFmpegKit.executeWithArgumentsAsync([
-//   "-i",
-//   safReadUrl,
-//   "-c:v",
-//   'mpeg4',
-//   safUrl,
-// ]);
-// FFmpegKit.executeAsync(
-//   `-i ${safReadUrl} -c:v libx265 -crf 28 ${safUrl}`
-// );
+export const startProcess = (
+  { input, output, crf }: ProcessFFmpegOptions,
+  onStart: (session: FFmpegSession) => void,
+  onProcessLog: LogCallback,
+  onEnd: () => void
+) => {
+  FFmpegKit.executeAsync(
+    `-i ${input} -c:v libx265 -crf ${crf} ${output}`,
+    onEnd,
+    onProcessLog
+  ).then(onStart);
+};
